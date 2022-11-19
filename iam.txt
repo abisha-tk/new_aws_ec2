@@ -1,0 +1,48 @@
+resource "aws_iam_instance_profile" "nx_instance_profile" {
+  name = "instance_profile_name"
+  role = aws_iam_role.nx_instance_role.name
+}
+
+resource "aws_iam_role" "nx_instance_role" {
+  name               = "ec2 role"
+  assume_role_policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": "sts:AssumeRole",
+            "Principal": {
+               "Service": "ec2.amazonaws.com"
+            },
+            "Effect": "Allow",
+            "Sid": ""
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_policy" "nx_policy" {
+  name        = "ec2policy"
+  path        = "/"
+  description = "My test policy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "ec2:*",
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+  })
+}
+
+
+resource "aws_iam_role_policy_attachment" "test-attach" {
+  name = "attachment"
+  role       = aws_iam_role.nx_instance_role.name
+  policy_arn = aws_iam_policy.nx_policy.arn
+}
